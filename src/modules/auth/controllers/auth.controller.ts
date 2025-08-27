@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Req,
   UseInterceptors,
@@ -23,12 +25,14 @@ export class AuthController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: SignInDto })
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   signIn(@Body() data: SignInDto) {
     return this.authService.signIn(data);
   }
 
   @Auth()
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   signOut(@Req() req: Request) {
     const authorization = req.headers.authorization;
     const token = authorization?.split(' ')[1];
@@ -37,6 +41,7 @@ export class AuthController {
 
   @Auth()
   @Get('profile')
+  @HttpCode(HttpStatus.OK)
   getProfile(@CurrentUser() user: any) {
     return user;
   }
