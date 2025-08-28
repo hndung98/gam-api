@@ -51,6 +51,7 @@ enum TransactionType {
   SPEND
 }
 
+// User (only login with Google)
 model User {
   id       String  @id @default(uuid())
   googleId String  @unique
@@ -71,6 +72,7 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+// User's profile
 model Profile {
   id       String  @id @default(uuid())
   fullname String?
@@ -81,6 +83,7 @@ model Profile {
   userId String @unique
 }
 
+// MCC account
 model MCC {
   id               String    @id @default(uuid())
   name             String
@@ -96,6 +99,7 @@ model MCC {
   createdAt DateTime @default(now())
 }
 
+// Advertising account
 model AdsAccount {
   id               String           @id @default(uuid())
   name             String
@@ -116,6 +120,7 @@ model AdsAccount {
   createdAt DateTime @default(now())
 }
 
+// User wallet
 model Wallet {
   id      String @id @default(uuid())
   balance Float  @default(0)
@@ -124,6 +129,7 @@ model Wallet {
   user   User   @relation(fields: [userId], references: [id])
 }
 
+// Transaction (deposit, spend, buy account)
 model Transaction {
   id     String            @id @default(uuid())
   type   TransactionType
@@ -137,6 +143,7 @@ model Transaction {
   createdAt DateTime @default(now())
 }
 
+// Order when buying available AdsAccount
 model Order {
   id     String      @id @default(uuid())
   price  Float
