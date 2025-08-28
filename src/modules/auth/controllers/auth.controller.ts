@@ -12,7 +12,7 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Public } from 'src/app.service';
-import { Auth, CurrentUser } from '../decorators/auth.decorator';
+import { Auth, CurrentUser } from '../../../common/decorators/auth.decorator';
 import { SignInDto } from '../dto/auth.dto';
 import { AuthService } from '../services/auth.service';
 
