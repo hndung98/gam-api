@@ -6,6 +6,7 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
@@ -21,6 +22,8 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api/v1');
 
+  // Cookie parser
+  app.use(cookieParser());
   // Helmet for header security
   app.use(
     helmet({
