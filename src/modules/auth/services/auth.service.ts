@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignInDto } from '../dto/auth.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
 
@@ -13,6 +18,9 @@ export class AuthService {
    */
   async signIn(data: SignInDto) {
     // TODO: login by username and password or using OAuth2
+    if (data.username && data.password)
+      throw new UnauthorizedException('Invalid password!');
+    throw new HttpException('Something went wrong', HttpStatus.BAD_REQUEST);
   }
 
   /**

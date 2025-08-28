@@ -1,18 +1,18 @@
 
 ###
-POST http://127.0.0.1:5000/auth/login
+POST http://127.0.0.1:5000/api/v1/auth/login
 content-type: application/json
 
 {
-    "username": "",
-    "password": ""
+    "username": "a",
+    "password": "a"
 }
 
 ###
-GET http://127.0.0.1:5000/auth/profile
+GET http://127.0.0.1:5000/api/v1/auth/profile
 Authorization: Bearer your_token_string
 
 
 ###
-POST http://localhost:5000/api/auth/refresh
+POST http://localhost:5000/api/v1/auth/refresh
 Cookie: refreshToken=xxx
