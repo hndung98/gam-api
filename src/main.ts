@@ -6,11 +6,13 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/exceptions/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { corsConfig } from './config/cors.config';
 
 async function bootstrap() {
   // const app = await NestFactory.create(AppModule);
@@ -19,7 +21,14 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api/v1');
 
-  app.enableCors();
+  // Helmet for header security
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // temporarily disable for testing
+    }),
+  );
+  // Enable CORS
+  app.enableCors(corsConfig);
 
   // Logger
   app.useLogger(app.get(Logger));
@@ -39,7 +48,7 @@ async function bootstrap() {
   // Global filters (exception handling)
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // openAPI
+  // Setup openAPI
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
