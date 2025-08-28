@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -32,9 +32,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message: message,
+      requestId: request.headers['x-request-id'],
     };
 
     this.logger.error(exception);
+    // this.logger.error(errorResponse);
 
     response.status(status).json(errorResponse);
   }
