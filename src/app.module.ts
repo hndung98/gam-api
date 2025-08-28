@@ -7,6 +7,7 @@ import { RequestIdMiddleware } from './common/middlewares/request.middleware';
 import { ConfigModule } from './config/confige.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PrismaModule } from './prisma/prisma.module';
         },
       },
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
