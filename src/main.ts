@@ -9,14 +9,21 @@ import {
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/exceptions/all-exceptions.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   // const app = await NestFactory.create(AppModule);
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
-  app.enableCors();
   app.setGlobalPrefix('api/v1');
+
+  app.enableCors();
+
+  // Logger
+  app.useLogger(app.get(Logger));
+  // Global pipes (validation, transformation)
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
@@ -24,9 +31,15 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-  app.useLogger(app.get(Logger));
+  // Global interceptors (logging, transform response, timeout ...)
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+  );
+  // Global filters (exception handling)
   app.useGlobalFilters(new AllExceptionsFilter());
 
+  // openAPI
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
