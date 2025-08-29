@@ -1,6 +1,12 @@
+/**
+ * Project : Sample PostgreSQL Schema (Production-ready)
+ * Author  : My team
+ * Date    : 2025-08-30
+ * Purpose : Define Prisma schema with conventions + comments + indexes
+ */
+
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -8,152 +14,281 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+////////////////////////////////////////////////////////////////////////
+// ENUM DEFINITIONS
+////////////////////////////////////////////////////////////////////////
+
+// Status of an AdsAccount in the system
 enum AdsAccountStatus {
+  // Account is active and can run ads
   ACTIVE
+  // Account is temporarily suspended (cannot run ads until resolved)
   SUSPENDED
+  // Account is permanently closed
   CLOSED
 }
 
+// Status of an MCC account in the system
 enum MCCStatus {
-  PENDING
+  // MCC is active and available for use
   ACTIVE
-  CANCELLED
+  // MCC is inactive (disabled or not yet configured)
+  UNACTIVE
 }
 
+// Type of MCC (Visibility scope of MCC account)
 enum MCCType {
+  // Available only for the owner (creator)
   PRIVATE
-  PROTECTED
+  // Available for all users in the system
   PUBLIC
 }
 
+// Current status of an order
 enum OrderStatus {
+  // Order is created but not yet processed
   PENDING
+  // Order completed successfully
   COMPLETED
+  // Order has been cancelled
   CANCELLED
 }
 
+// Role of user in the system
 enum Role {
+  // System administrator with full access
   ADMIN
+  // Agency that manages MCC and multiple customers
   AGENCY
+  // End customer who buys AdsAccount and runs ads
   CUSTOMER
 }
 
+// Current status of a transaction
 enum TransactionStatus {
+  // Transaction is pending approval or processing
   PENDING
+  // Transaction completed successfully
   COMPLETED
+  // Transaction failed
   FAILED
 }
 
+// Type of transaction in the system
 enum TransactionType {
+  // Deposit money into system wallet
   DEPOSIT
+  // Withdraw money from system wallet
   WITHDRAW
+  // Purchase AdsAccount or service
   PURCHASE
+  // Spend credit to run ads
   SPEND
 }
 
-// User (only login with Google)
-model User {
-  id       String  @id @default(uuid())
-  googleId String  @unique
-  email    String  @unique
-  name     String?
-  role     Role    @default(CUSTOMER)
-  timezone String?
-  currency String?
+////////////////////////////////////////////////////////////////////////
+// MODEL DEFINITIONS
+////////////////////////////////////////////////////////////////////////
 
+// =====================================================================
+// User of the system (login with Google only)
+// =====================================================================
+model User {
+  // Primary key
+  id       String  @id @default(uuid())
+  // User role (ADMIN / AGENCY / CUSTOMER)
+  role     Role    @default(CUSTOMER)
+  // User email (unique)
+  email    String  @unique
+  // Google unique ID
+  googleId String  @unique
+  // Avatar url
+  avatar   String?
+  // User full name
+  fullName String? @map("name")
+  // User phone number
+  phone    String?
+  // User countrty
+  country  String?
+
+  // Soft delete flag (false = active, true = deleted)
+  deleteFlag Boolean @default(false)
+
+  // Relations
   mccs         MCC[]         @relation("MCCOwner")
   adsAccounts  AdsAccount[]  @relation("AdsAccountOwner")
   wallet       Wallet?
   transactions Transaction[]
   orders       Order[]
-  profile      Profile?
 
+  // Date and time when user was created
   createdAt DateTime @default(now())
+  // Date and time when user was updated
   updatedAt DateTime @updatedAt
+
+  // Indexes
+  @@index([fullName])
 }
 
-// User's profile
-model Profile {
-  id       String  @id @default(uuid())
-  fullname String?
-  phone    String?
-  country  String?
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
-}
-
-// MCC account
+// =====================================================================
+// MCC (My Client Center / Manager Account)
+// Can manage AdsAccounts or other MCCs (self-relation)
+// =====================================================================
 model MCC {
-  id               String    @id @default(uuid())
-  name             String
-  googleCustomerId String?   @unique
-  type             MCCType   @default(PRIVATE)
-  status           MCCStatus @default(PENDING)
-  connected        Boolean   @default(false)
+  // Primary key
+  id         String    @id @default(uuid())
+  // MCC type (PUBLIC, PRIVATE)
+  type       MCCType   @default(PRIVATE)
+  // MCC name
+  name       String
+  // MCC status (ACTIVE, UNACTIVE)
+  status     MCCStatus @default(ACTIVE)
+  // MCC countrty
+  country    String?
+  // MCC timezone
+  timezone   String?
+  // MCC currency
+  currency   String?
+  // Credit limit assigned to this MCC
+  creditLine Float?
 
-  ownerId     String
-  owner       User         @relation("MCCOwner", fields: [ownerId], references: [id])
-  adsAccounts AdsAccount[]
+  // Connection status with Google Ads API
+  // - true: MCC is successfully connected
+  // - false: MCC is not connected yet
+  isConnected      Boolean @default(false)
+  // Google Ads Manager Account ID
+  googleCustomerId String? @unique
 
+  // Owner (Admin or Agency)
+  ownerId String
+  owner   User   @relation("MCCOwner", fields: [ownerId], references: [id])
+
+  // Self relation: parent MCC
+  parentMCCId String?
+  parentMCC   MCC?    @relation("MCCChildren", fields: [parentMCCId], references: [id])
+
+  // Relations
+  childrenMCCs MCC[]        @relation("MCCChildren")
+  adsAccounts  AdsAccount[]
+
+  // Date and time when MCC was created
   createdAt DateTime @default(now())
+
+  // Indexes
+  @@index([name])
+  @@index([status])
+  @@index([ownerId])
+  @@index([createdAt])
 }
 
-// Advertising account
+// =====================================================================
+// AdsAccount (Google Ads Account)
+// Real advertising account that runs campaigns
+// =====================================================================
 model AdsAccount {
+  // Primary key
   id               String           @id @default(uuid())
+  // Account name
   name             String
+  // Account status
   status           AdsAccountStatus @default(ACTIVE)
-  googleCustomerId String           @unique
+  // Google Ads Account ID
+  googleCustomerId String?          @unique
 
+  // Soft delete flag (false = active, true = deleted)
+  deleteFlag Boolean @default(false)
+
+  // Belongs to MCC
   mccId String?
   mcc   MCC?    @relation(fields: [mccId], references: [id])
 
+  // Belongs to User (customer who owns/uses it)
   ownerId String?
   owner   User?   @relation("AdsAccountOwner", fields: [ownerId], references: [id])
 
+  // Marketplace fields
   isForSale Boolean @default(false)
   price     Float?
 
+  // Relations
   orders Order[]
 
+  // Date and time when AdsAccount was created
   createdAt DateTime @default(now())
+
+  // Indexes
+  @@index([mccId])
+  @@index([status])
+  @@index([ownerId])
 }
 
-// User wallet
+// =====================================================================
+// Wallet for each user (for credit & payment)
+// =====================================================================
 model Wallet {
+  // Primary key
   id      String @id @default(uuid())
+  // Current available balance of the wallet
   balance Float  @default(0)
+  // The owner user of this wallet (unique, one wallet per user)
+  userId  String @unique
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  // Relations
+  user User @relation(fields: [userId], references: [id])
 }
 
-// Transaction (deposit, spend, buy account)
+// =====================================================================
+// Transaction history (deposit, withdraw, purchase, spend)
+// =====================================================================
 model Transaction {
+  // Primary key
   id     String            @id @default(uuid())
+  // Type of transaction (DEPOSIT, WITHDRAW, PURCHASE, SPEND,)
   type   TransactionType
+  // Current status of transaction (PENDING, COMPLETED, FAILED)
   status TransactionStatus @default(PENDING)
+  // Transaction amount (positive value)
   amount Float
+  // Optional note or description for the transaction
   note   String?
 
+  // The user who performed this transaction
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
+  // Date and time when transaction was created
   createdAt DateTime @default(now())
+
+  // Indexes
+  @@index([type])
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
 }
 
+// =====================================================================
 // Order when buying available AdsAccount
+// =====================================================================
 model Order {
+  // Primary key
   id     String      @id @default(uuid())
+  // Total price of the order
   price  Float
+  // Current status of the order (PENDING, COMPLETED, CANCELLED)
   status OrderStatus @default(PENDING)
 
+  // The user who placed the order (buyer)
   buyerId String
   buyer   User   @relation(fields: [buyerId], references: [id])
 
+  // The AdsAccount being purchased in this order
   adsAccountId String
   adsAccount   AdsAccount @relation(fields: [adsAccountId], references: [id])
 
+  // Date and time when order was created
   createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([buyerId])
+  @@index([createdAt])
 }
