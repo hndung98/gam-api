@@ -6,8 +6,9 @@ import { AppService } from './app.service';
 import { RequestIdMiddleware } from './common/middlewares/request.middleware';
 import { ConfigModule } from './config/confige.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { GoogleAdsModule } from './modules/google-ads/google-ads.module';
 import { UserModule } from './modules/user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UserModule } from './modules/user/user.module';
       },
     }),
     UserModule,
+    GoogleAdsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
