@@ -21,6 +21,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  async googleLogin(@Body('idToken') idToken: string) {
+    return this.authService.verifyGoogleToken(idToken);
+  }
+
+  @Public()
   @UseInterceptors(AnyFilesInterceptor())
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: SignInDto })

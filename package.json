@@ -44,6 +44,7 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "google-ads-api": "^21.0.1",
+    "google-auth-library": "^10.3.0",
     "helmet": "^8.1.0",
     "joi": "^18.0.1",
     "multer": "^2.0.2",
