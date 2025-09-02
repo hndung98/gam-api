@@ -20,7 +20,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
-  app.setGlobalPrefix('api/v1');
+
+  const prefix = process.env.API_PREFIX || '';
+  app.setGlobalPrefix(prefix);
 
   // Cookie parser
   app.use(cookieParser());
@@ -65,9 +67,10 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, options);
   SwaggerModule.setup('api/docs', app, documentFactory);
 
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableShutdownHooks();
+
+  await app.listen(process.env.PORT ?? 8080);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-bootstrap().catch((err) => {
-  console.error('Error starting the app:', err);
-});
+
+bootstrap();

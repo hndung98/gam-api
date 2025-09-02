@@ -4,7 +4,7 @@ import { Auth } from 'src/common/decorators/auth.decorator';
 import { UserEntity } from '../entities/user.entity';
 import { UserService } from '../services/user.service';
 
-@Auth('ADMIN')
+// @Auth('ADMIN')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

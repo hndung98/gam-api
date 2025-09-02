@@ -1,0 +1,29 @@
+# Node modules & logs
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build outputs
+dist
+coverage
+
+# Env & secrets
+.env
+.env.*
+!.env.example   # cho phép giữ file mẫu
+
+# Git & configs
+.git
+.gitignore
+.dockerignore
+
+# IDE/editor junk
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
